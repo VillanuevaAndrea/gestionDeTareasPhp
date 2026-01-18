@@ -3,9 +3,9 @@ $host = "localhost";
 $db = "todo_list";
 $usuario = "root";
 $password = "";
-$charser = "utf8mb4";
+$charset = "utf8mb4";
 
-$dsn = "mysql:host=$host; dbname=$db;charset=$charser"; 
+$dsn = "mysql:host=$host; dbname=$db;charset=$charset"; 
 
 try {
     $conexion = new PDO($dsn, $usuario, $password);

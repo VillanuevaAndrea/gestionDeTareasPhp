@@ -1,0 +1,10 @@
+
+.php_history
+session_data/
+
+
+.DS_Store
+Thumbs.db
+
+error_log
+access_log
