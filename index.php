@@ -27,7 +27,10 @@ try {
 <div class="container" style="max-width: 800px; margin: 20px auto; padding: 20px; background: #fff; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
     
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-        <h2 style="margin: 0; color: #333;">Hola, <?php echo htmlspecialchars($user_nombre); ?>! 👋</h2>
+        <h2 style="margin: 0; color: #333; display: flex; align-items: center; gap: 10px;">
+        <i class="fas fa-user-circle" style="color: #4e73df;"></i> 
+        Hola, <?php echo htmlspecialchars($user_nombre); ?>!
+</h2>
         <a href="logout.php" style="color: #dc3545; text-decoration: none; font-weight: bold; font-size: 14px; padding: 8px 12px; border: 1px solid #dc3545; border-radius: 4px;">Cerrar sesión</a>
     </div>
 
@@ -43,7 +46,7 @@ try {
             
             <button type="submit" 
                     style="flex: 1; height: 45px; background: #4e73df; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; white-space: nowrap; transition: background 0.3s;">
-                + Agregar
+                <i class="fas fa-plus"></i> Agregar
             </button>
         </form>
 
@@ -65,10 +68,14 @@ try {
                                 <span style="font-size: 12px; color: #858796; background: #eaecf4; padding: 4px 8px; border-radius: 4px;">
                                     <?php echo date('d/m H:i', strtotime($t['fecha_creacion'])); ?>
                                 </span>
-                                <a href="editar_tarea.php?id=<?php echo $t['id']; ?>" style="text-decoration: none; font-size: 18px;">✏️</a>
+                                <a href="editar_tarea.php?id=<?php echo $t['id']; ?>" style="color: #4e73df; text-decoration: none; font-size: 18px;" title="Editar">
+                                    <i class="fas fa-edit"></i>
+                                </a>
                                 <a href="eliminar_tarea.php?id=<?php echo $t['id']; ?>" 
-                                   style="color: #e74a3b; text-decoration: none; font-size: 18px;" 
-                                   onclick="return confirm('¿Seguro quieres borrar esta tarea?')">🗑️</a>
+                                    style="color: #e74a3b; text-decoration: none; font-size: 18px;" 
+                                    onclick="return confirm('¿Seguro quieres borrar esta tarea?')" title="Eliminar">
+                                    <i class="fas fa-trash-alt"></i>
+                                </a>
                             </div>
 
                         </li>
