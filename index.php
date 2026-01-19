@@ -65,6 +65,7 @@ try {
                                 <span style="font-size: 12px; color: #858796; background: #eaecf4; padding: 4px 8px; border-radius: 4px;">
                                     <?php echo date('d/m H:i', strtotime($t['fecha_creacion'])); ?>
                                 </span>
+                                <a href="editar_tarea.php?id=<?php echo $t['id']; ?>" style="text-decoration: none; font-size: 18px;">✏️</a>
                                 <a href="eliminar_tarea.php?id=<?php echo $t['id']; ?>" 
                                    style="color: #e74a3b; text-decoration: none; font-size: 18px;" 
                                    onclick="return confirm('¿Seguro quieres borrar esta tarea?')">🗑️</a>
