@@ -1,36 +1,38 @@
 <?php
 session_start();
-
-// 1. SEGURIDAD: Si no hay sesión, mandamos al login
 if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
     exit();
 }
 
 require 'conexion.php';
-
 $user_id = $_SESSION['user_id'];
 $user_nombre = $_SESSION['user_usuario'];
 
+$nombres_estado = [0 => 'Pendiente', 1 => 'En Proceso', 2 => 'Completada'];
+$iconos_estado = [0 => 'fa-circle', 1 => 'fa-spinner fa-spin', 2 => 'fa-check-circle'];
+$colores_prioridad = [1 => '#5acc61', 2 => '#f6c23e', 3 => '#e74a3b'];
+$nombres_prio = [1 => 'Baja', 2 => 'Media', 3 => 'Alta'];
+
 try {
-    $stmt = $conexion->prepare("SELECT * FROM tareas WHERE usuario_id = ? ORDER BY fecha_creacion DESC");
+    $stmt = $conexion->prepare("SELECT * FROM tareas WHERE usuario_id = ? ORDER BY prioridad DESC, fecha_creacion DESC");
     $stmt->execute([$user_id]);
     $tareas = $stmt->fetchAll();
 } catch (PDOException $e) {
-    error_log("Error al consultar tareas: " . $e->getMessage());
+    error_log("Error: " . $e->getMessage());
     $tareas = []; 
 }
-?>
 
-<?php include 'includes/header.php'; ?>
+include 'includes/header.php'; 
+?>
 
 <div class="container" style="max-width: 800px; margin: 20px auto; padding: 20px; background: #fff; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
     
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
         <h2 style="margin: 0; color: #333; display: flex; align-items: center; gap: 10px;">
-        <i class="fas fa-user-circle" style="color: #4e73df;"></i> 
-        Hola, <?php echo htmlspecialchars($user_nombre); ?>!
-</h2>
+            <i class="fas fa-user-circle" style="color: #4e73df;"></i> 
+            Hola, <?php echo htmlspecialchars($user_nombre); ?>!
+        </h2>
         <a href="logout.php" style="color: #dc3545; text-decoration: none; font-weight: bold; font-size: 14px; padding: 8px 12px; border: 1px solid #dc3545; border-radius: 4px;">Cerrar sesión</a>
     </div>
 
@@ -42,54 +44,72 @@ try {
         
         <form action="agregar_tarea.php" method="POST" style="display: flex; gap: 10px; align-items: center;">
             <input type="text" name="titulo" placeholder="Ej: Estudiar para el examen..." required 
-                   style="flex: 4; padding: 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 16px; height: 45px; box-sizing: border-box;">
+                   style="flex: 3; padding: 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 16px; height: 45px; box-sizing: border-box;">
             
-            <button type="submit" 
-                    style="flex: 1; height: 45px; background: #4e73df; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; white-space: nowrap; transition: background 0.3s;">
+            <select name="prioridad" style="flex: 1; height: 45px; border: 1px solid #ddd; border-radius: 4px; padding: 0 10px; background: white;">
+                <option value="1">Baja</option>
+                <option value="2" selected>Media</option>
+                <option value="3">Alta</option>
+            </select>
+
+            <button type="submit" style="flex: 1; height: 45px; background: #4e73df; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">
                 <i class="fas fa-plus"></i> Agregar
             </button>
         </form>
 
         <hr style="border: 0; border-top: 1px solid #eee; margin: 30px 0;">
 
-        <h3 style="margin-bottom: 15px; color: #444;">Tus tareas Pendientes</h3>
+        <h3 style="margin-bottom: 15px; color: #444;">Mis Tareas</h3>
         
         <div id="lista-tareas">
             <?php if (count($tareas) > 0): ?>
                 <ul style="list-style: none; padding: 0;">
                     <?php foreach ($tareas as $t): ?>
-                        <li style="background: #f8f9fc; border: 1px solid #e3e6f0; padding: 15px; margin-bottom: 10px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
+                        <?php 
                             
-                            <span style="font-size: 16px; color: #4e73df; font-weight: 500;">
-                                <?php echo htmlspecialchars($t['titulo']); ?>
-                            </span>
+                            $p_val = $t['prioridad'];
+                            if ($p_val === 'baja') $p_id = 1;
+                            elseif ($p_val === 'media') $p_id = 2;
+                            elseif ($p_val === 'alta') $p_id = 3;
+                            else $p_id = (int)$p_val;
+
+                            $e_id = (int)($t['estado'] ?? 0); 
+                        ?>
+                        <li style="background: #fff; border: 1px solid #e3e6f0; border-left: 8px solid <?php echo $colores_prioridad[$p_id] ?? '#ccc'; ?>; padding: 15px; margin-bottom: 10px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
+                            
+                            <div>
+                                <span style="font-size: 16px; color: #333; font-weight: 500; <?php echo ($e_id == 2) ? 'text-decoration: line-through; color: #858796;' : ''; ?>">
+                                    <?php echo htmlspecialchars($t['titulo']); ?>
+                                </span>
+                                <br>
+                                <small style="color: #858796;">
+                                    Prioridad: <strong><?php echo $nombres_prio[$p_id] ?? 'N/A'; ?></strong> | 
+                                    Estado: <strong><?php echo $nombres_estado[$e_id] ?? 'Pendiente'; ?></strong>
+                                </small>
+                            </div>
                             
                             <div style="display: flex; align-items: center; gap: 15px;">
-                                <span style="font-size: 12px; color: #858796; background: #eaecf4; padding: 4px 8px; border-radius: 4px;">
-                                    <?php echo date('d/m H:i', strtotime($t['fecha_creacion'])); ?>
-                                </span>
-                                <a href="editar_tarea.php?id=<?php echo $t['id']; ?>" style="color: #4e73df; text-decoration: none; font-size: 18px;" title="Editar">
-                                    <i class="fas fa-edit"></i>
+                                <?php $prox_estado = ($e_id + 1) % 3; ?>
+                                <a href="cambiar_estado.php?id=<?php echo $t['id']; ?>&estado=<?php echo $prox_estado; ?>" 
+                                   style="color: #4e73df; text-decoration: none; font-size: 20px;" title="Cambiar Estado">
+                                   <i class="fas <?php echo $iconos_estado[$e_id] ?? 'fa-circle'; ?>"></i>
                                 </a>
-                                <a href="eliminar_tarea.php?id=<?php echo $t['id']; ?>" 
-                                    style="color: #e74a3b; text-decoration: none; font-size: 18px;" 
-                                    onclick="return confirm('¿Seguro quieres borrar esta tarea?')" title="Eliminar">
+
+                                <a href="editar_tarea.php?id=<?php echo $t['id']; ?>" style="color: #f6c23e; text-decoration: none; font-size: 18px;"><i class="fas fa-edit"></i></a>
+                                
+                                <a href="eliminar_tarea.php?id=<?php echo $t['id']; ?>" style="color: #e74a3b; text-decoration: none; font-size: 18px;" onclick="return confirm('¿Borrar?')">
                                     <i class="fas fa-trash-alt"></i>
                                 </a>
                             </div>
-
                         </li>
                     <?php endforeach; ?>
                 </ul>
             <?php else: ?>
-                <div style="text-align: center; padding: 30px; background: #fdfdfd; border: 2px dashed #eee; border-radius: 8px;">
-                    <p style="color: #999; font-style: italic; margin: 0;">
-                        Todavía no tienes tareas cargadas. ¡Empezá agregando una arriba!
-                    </p>
+                <div style="text-align: center; padding: 30px; border: 2px dashed #eee;">
+                    <p style="color: #999;">Aún no tienes tareas cargadas.</p>
                 </div>
             <?php endif; ?>
         </div>
     </div>
 </div>
-
 <?php include 'includes/footer.php'; ?>

@@ -7,29 +7,22 @@ if (!isset($_SESSION['user_id'])) {
     exit();
 }
 
-if ($_SERVER["REQUEST_METHOD"] == "POST" && !empty($_POST['titulo'])) {
-    
-    $titulo = $_POST['titulo'];
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['titulo'])) {
+    $titulo = trim($_POST['titulo']); 
+    $prioridad = (int)$_POST['prioridad']; 
     $user_id = $_SESSION['user_id'];
+    $estado_inicial = 0; 
 
-    try {
-        $stmt = $conexion->prepare("INSERT INTO tareas (usuario_id, titulo) VALUES (:u_id, :titulo)");
-        
-        $stmt->execute([
-            ':u_id'   => $user_id,
-            ':titulo' => $titulo
-        ]);
-
-        header("Location: index.php");
-        exit();
-
-    } catch (PDOException $e) {
-        
-        error_log("Error al insertar tarea: " . $e->getMessage());
-        echo "Error al guardar la tarea.";
+    if (!empty($titulo)) {
+        try {
+            $stmt = $conexion->prepare("INSERT INTO tareas (usuario_id, titulo, prioridad, estado, fecha_creacion) VALUES (?, ?, ?, ?, NOW())");
+            $stmt->execute([$user_id, $titulo, $prioridad, $estado_inicial]);
+        } catch (PDOException $e) {
+            error_log("Error al insertar tarea: " . $e->getMessage());
+        }
     }
-} else {
-    
-    header("Location: index.php");
-    exit();
 }
+
+header("Location: index.php");
+exit();
+?>
